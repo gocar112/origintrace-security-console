@@ -1,0 +1,7 @@
+interface:
+  display_name: "OriginTrace Console"
+  short_description: "Operate and evolve the security console"
+  icon_small: "../assets/origintrace-console.png"
+  icon_large: "../assets/origintrace-console.png"
+  brand_color: "#B8FF32"
+  default_prompt: "Use $origintrace-console to update, verify, or publish the OriginTrace security console."

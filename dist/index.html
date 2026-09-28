@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="OriginTrace Security Console correlates OWASP surface findings and runtime kernel signals to exact source-code origins, verified rules, and review-ready fixes.">
+  <title>OriginTrace Security Console</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c10' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23b8ff32' stroke-width='2.5' d='M16 3 27 7v8c0 7-4.7 11.5-11 14C9.7 26.5 5 22 5 15V7z'/%3E%3Ccircle cx='16' cy='14' r='3' fill='%23b8ff32'/%3E%3Cpath stroke='%23b8ff32' stroke-width='2' d='M16 17v7'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to console</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M16 3 27 7v8c0 7-4.7 11.5-11 14C9.7 26.5 5 22 5 15V7z"/><circle cx="16" cy="14" r="3"/><path d="M16 17v7"/></svg>
+      </div>
+      <div>
+        <span class="eyebrow">RUNTIME → SOURCE</span>
+        <strong>OriginTrace</strong>
+      </div>
+    </div>
+
+    <nav class="view-tabs" aria-label="Console views">
+      <button class="tab active" data-view="incidents" type="button">Incidents</button>
+      <button class="tab" data-view="scanner" type="button">OWASP scanner</button>
+      <button class="tab" data-view="pipeline" type="button">Pipeline</button>
+    </nav>
+
+    <div class="header-actions">
+      <span class="environment"><i></i> Repository evidence</span>
+      <a class="book-link" href="./book/OriginTrace-Security-Console-Operator-Guide.pdf" download>Operator book</a>
+      <a class="icon-link" href="https://github.com/ritvikindupuri/OriginTrace_DevSecOps" target="_blank" rel="noreferrer" aria-label="Open OriginTrace repository">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main id="workspace">
+    <section class="view active" id="incidents-view" aria-labelledby="incidents-heading">
+      <div class="page-heading">
+        <div>
+          <p class="section-kicker">Threat workbench</p>
+          <h1 id="incidents-heading">Trace the signal. Prove the path. Stage the fix.</h1>
+        </div>
+        <div class="heading-meta">
+          <span>Evidence set</span>
+          <strong>4 repository scenarios</strong>
+        </div>
+      </div>
+
+      <section class="metrics" aria-label="Incident summary">
+        <article>
+          <span>Confirmed exploitable</span>
+          <strong>3</strong>
+          <small><b class="signal critical"></b> CI/CD block</small>
+        </article>
+        <article>
+          <span>Static only</span>
+          <strong>1</strong>
+          <small><b class="signal info"></b> Suppressed from P0</small>
+        </article>
+        <article>
+          <span>Mean reachability</span>
+          <strong>75%</strong>
+          <small>Runtime-weighted verdict</small>
+        </article>
+        <article>
+          <span>Fixes staged</span>
+          <strong>3</strong>
+          <small>Developer review required</small>
+        </article>
+      </section>
+
+      <div class="workspace-grid">
+        <aside class="queue-panel panel">
+          <div class="panel-header stack-mobile">
+            <div>
+              <span class="panel-label">INCIDENT QUEUE</span>
+              <strong><span id="incident-count">4</span> signals</strong>
+            </div>
+            <button class="ghost-button" id="refresh-button" type="button" title="Refresh evidence set">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M18.4 9a7 7 0 0 0-11.7-2.6L4 9m16 6-2.7 2.6A7 7 0 0 1 5.6 15"/></svg>
+              Refresh
+            </button>
+          </div>
+
+          <div class="queue-tools">
+            <label class="search-box">
+              <span class="sr-only">Search incidents</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+              <input id="incident-search" type="search" placeholder="Search rule, syscall, source…">
+            </label>
+            <div class="filters" aria-label="Filter incidents">
+              <button class="filter active" data-filter="all" type="button">All</button>
+              <button class="filter" data-filter="confirmed" type="button">Confirmed</button>
+              <button class="filter" data-filter="static" type="button">Static only</button>
+            </div>
+          </div>
+
+          <div class="incident-list" id="incident-list" role="listbox" aria-label="Security incidents"></div>
+        </aside>
+
+        <section class="evidence-panel panel" aria-live="polite">
+          <div class="panel-header evidence-heading">
+            <div>
+              <div class="incident-id-row">
+                <span class="severity-badge" id="detail-severity">CRITICAL</span>
+                <span class="mono muted" id="detail-id">inc-9fa1</span>
+              </div>
+              <h2 id="detail-title">Terminal shell spawned in production container</h2>
+              <p id="detail-summary">Falco observed an interactive shell from a request-controlled subprocess.</p>
+            </div>
+            <div class="verdict-lockup">
+              <div class="score-ring" id="score-ring" style="--score: 85">
+                <div><strong id="detail-score">85</strong><span>/100</span></div>
+              </div>
+              <div>
+                <span class="panel-label">DUAL VERDICT</span>
+                <strong class="verdict confirmed" id="detail-verdict">CONFIRMED EXPLOITABLE</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="evidence-band">
+            <div>
+              <span>Kernel syscall</span>
+              <strong class="mono accent" id="detail-syscall">execve</strong>
+            </div>
+            <div>
+              <span>Source origin</span>
+              <strong class="mono" id="detail-file">sample_workload/app.py:36</strong>
+            </div>
+            <div>
+              <span>Function</span>
+              <strong class="mono" id="detail-function">diagnostic_ping()</strong>
+            </div>
+            <div>
+              <span>OWASP / CWE</span>
+              <strong id="detail-owasp">A03 · CWE-78</strong>
+            </div>
+          </div>
+
+          <div class="trace-line" aria-label="Correlation stages">
+            <div class="trace-step complete"><i>1</i><span><b>Falco</b><small>Runtime signal</small></span></div>
+            <span class="connector"></span>
+            <div class="trace-step complete"><i>2</i><span><b>Python AST</b><small>Sink matched</small></span></div>
+            <span class="connector"></span>
+            <div class="trace-step complete"><i>3</i><span><b>Semgrep</b><small>Rule verified</small></span></div>
+            <span class="connector"></span>
+            <div class="trace-step complete"><i>4</i><span><b>Fix</b><small>Patch staged</small></span></div>
+          </div>
+
+          <div class="code-grid">
+            <article class="code-card danger-code">
+              <div class="code-title"><span>Vulnerable sink</span><button class="copy-button" data-copy-target="vulnerable-code" type="button">Copy</button></div>
+              <pre id="vulnerable-code"><code><span class="line-no">34</span> @app.get("/ping")
+<span class="line-no">35</span> def diagnostic_ping(host: str):
+<span class="line-no danger-line">36</span>     os.system(f"ping -c 1 {host}")</code></pre>
+            </article>
+            <article class="code-card safe-code">
+              <div class="code-title"><span>Staged remediation</span><button class="copy-button" data-copy-target="safe-code" type="button">Copy</button></div>
+              <pre id="safe-code"><code><span class="line-no">34</span> @app.get("/ping")
+<span class="line-no">35</span> def diagnostic_ping(host: str):
+<span class="line-no safe-line">36</span>     validate_host(host)
+<span class="line-no safe-line">37</span>     subprocess.run(["ping", "-c", "1", host],
+<span class="line-no safe-line">38</span>                    check=True, shell=False)</code></pre>
+            </article>
+          </div>
+
+          <div class="evidence-footer">
+            <div class="payload-block">
+              <span class="panel-label">RUNTIME EVIDENCE</span>
+              <code id="detail-payload">sh -c ping -c 1 127.0.0.1; cat /etc/passwd</code>
+            </div>
+            <button class="primary-button" id="rule-button" type="button">
+              Inspect generated rule
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <section class="lab-panel panel">
+        <div class="lab-copy">
+          <span class="panel-label">REACHABILITY LAB</span>
+          <h2>Audit the verdict instead of trusting a black box.</h2>
+          <p>Toggle the evidence gates to see how runtime proof changes prioritization. This calculation runs locally in your browser.</p>
+        </div>
+        <div class="evidence-toggles" id="evidence-toggles">
+          <label><input type="checkbox" data-weight="35" checked><span><b>Runtime observed</b><small>Falco/eBPF event · +35</small></span></label>
+          <label><input type="checkbox" data-weight="25" checked><span><b>AST sink matched</b><small>File + function · +25</small></span></label>
+          <label><input type="checkbox" data-weight="25" checked><span><b>Semgrep verified</b><small>Taint path confirmed · +25</small></span></label>
+          <label><input type="checkbox" data-weight="15"><span><b>External input reachable</b><small>Request-controlled · +15</small></span></label>
+        </div>
+        <div class="lab-result">
+          <span>Computed score</span>
+          <strong><b id="lab-score">85</b><small>/100</small></strong>
+          <em id="lab-verdict">P0 · CONFIRMED</em>
+        </div>
+      </section>
+    </section>
+
+    <section class="view" id="scanner-view" aria-labelledby="scanner-heading">
+      <div class="page-heading">
+        <div>
+          <p class="section-kicker">Authorized testing</p>
+          <h1 id="scanner-heading">OWASP surface scanner</h1>
+          <p class="heading-description">Prepare a rate-limited scan command from the companion Python scanner. Only scan systems you own or have explicit permission to test.</p>
+        </div>
+        <a class="secondary-button" href="https://github.com/gocar112/the-OWASP-Top-10-Vulnerability-Scanner" target="_blank" rel="noreferrer">View scanner source</a>
+      </div>
+
+      <div class="scanner-layout">
+        <section class="scan-launcher panel">
+          <div class="panel-header">
+            <div><span class="panel-label">NEW AUTHORIZED SCAN</span><strong>Define target</strong></div>
+            <span class="rate-limit">500ms request delay</span>
+          </div>
+          <form id="scan-form">
+            <label class="field-label" for="target-url">Target URL</label>
+            <div class="url-row">
+              <input id="target-url" type="url" placeholder="https://app.example.com" required autocomplete="url">
+              <button class="primary-button" type="submit">Build command</button>
+            </div>
+            <label class="authorization-check"><input id="authorization" type="checkbox" required><span>I confirm I am authorized to test this target.</span></label>
+            <div class="form-message" id="scan-message" role="status"></div>
+          </form>
+
+          <div class="command-output" id="command-output" hidden>
+            <div class="code-title"><span>Scanner command</span><button class="copy-button" data-copy-target="scan-command" type="button">Copy</button></div>
+            <pre id="scan-command"><code></code></pre>
+            <p>The hosted console prepares the command; the repository scanner performs the network test from your trusted environment.</p>
+          </div>
+        </section>
+
+        <aside class="coverage-panel panel">
+          <div class="panel-header"><div><span class="panel-label">CHECK COVERAGE</span><strong>10 active routines</strong></div><span class="coverage-count">A01–A10</span></div>
+          <div class="coverage-list">
+            <div><i class="high"></i><span><b>Injection</b><small>SQL, command, reflected XSS</small></span><code>A03</code></div>
+            <div><i class="medium"></i><span><b>Authentication</b><small>Weak auth surface discovery</small></span><code>A07</code></div>
+            <div><i class="high"></i><span><b>File inclusion</b><small>Local and remote indicators</small></span><code>A01</code></div>
+            <div><i class="medium"></i><span><b>Deserialization</b><small>Session and platform signals</small></span><code>A08</code></div>
+            <div><i class="low"></i><span><b>Misconfiguration</b><small>Exposed server headers</small></span><code>A05</code></div>
+            <div><i class="low"></i><span><b>Components</b><small>Version disclosure patterns</small></span><code>A06</code></div>
+            <div><i class="low"></i><span><b>Logging exposure</b><small>Error and trace leakage</small></span><code>A09</code></div>
+          </div>
+        </aside>
+      </div>
+
+      <section class="bridge-panel panel">
+        <div>
+          <span class="panel-label">THE FUSION</span>
+          <h2>Surface breadth from OWASP. Runtime truth from OriginTrace.</h2>
+        </div>
+        <div class="bridge-flow" aria-label="Combined security workflow">
+          <div><b>HTTP probes</b><span>OWASP scanner</span></div><i>+</i><div><b>Kernel signals</b><span>Falco / eBPF</span></div><i>→</i><div class="bridge-result"><b>Prioritized evidence</b><span>Code origin + fix</span></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="view" id="pipeline-view" aria-labelledby="pipeline-heading">
+      <div class="page-heading">
+        <div>
+          <p class="section-kicker">System architecture</p>
+          <h1 id="pipeline-heading">One evidence chain, from packet to patch.</h1>
+          <p class="heading-description">Every stage preserves the incident context needed by the next. Automated fixes are staged for review, never silently merged.</p>
+        </div>
+      </div>
+
+      <figure class="architecture-art panel">
+        <img src="./assets/runtime-to-source-architecture.png" alt="Runtime container signals flowing through an abstract syntax tree into verified source code and a security shield">
+        <figcaption>
+          <div><span class="panel-label">ILLUSTRATED EVIDENCE FLOW</span><strong>Runtime signal → AST correlation → verified source control</strong></div>
+          <div class="book-actions">
+            <a class="primary-button" href="./book/OriginTrace-Security-Console-Operator-Guide.pdf" download>Download PDF</a>
+            <a class="secondary-button" href="./book/OriginTrace-Security-Console-Operator-Guide.docx" download>Download DOCX</a>
+          </div>
+        </figcaption>
+      </figure>
+
+      <section class="pipeline-map panel" aria-label="OriginTrace pipeline stages">
+        <article><span>01</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M5 7l7-5 7 5M5 17l7 5 7-5"/></svg></div><h2>Detect</h2><p>Falco captures <code>execve</code>, <code>openat</code>, and <code>connect</code> events.</p><small>eBPF · Kubernetes</small></article>
+        <article><span>02</span><div class="stage-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M19.1 4.9l-2.8 2.8M7.7 16.3l-2.8 2.8"/></svg></div><h2>Correlate</h2><p>Python AST walkers resolve the syscall to an exact source sink and function.</p><small>File · Line · Function</small></article>
+        <article><span>03</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></div><h2>Verify</h2><p>A synthesized Semgrep taint rule confirms whether untrusted input reaches the sink.</p><small>CWE · OWASP · Taint</small></article>
+        <article><span>04</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M14 6 4 16l4 4L18 10M13 7l4 4M19 2l3 3-4 4-3-3z"/></svg></div><h2>Remediate</h2><p>A unified diff replaces the dangerous call with a validated, parameterized alternative.</p><small>Review-ready patch</small></article>
+        <article><span>05</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div><h2>Observe</h2><p>Elasticsearch and Kibana retain the verdict, origin, and forensic trail.</p><small>SIEM · Audit stream</small></article>
+      </section>
+
+      <div class="pipeline-bottom">
+        <section class="rule-preview panel">
+          <div class="panel-header"><div><span class="panel-label">SYNTHESIZED POLICY</span><strong>Semgrep taint rule</strong></div><span class="verified-chip">Verified</span></div>
+          <pre><code><span class="yaml-key">rules:</span>
+  - <span class="yaml-key">id:</span> auto-origintrace-terminal-shell
+    <span class="yaml-key">mode:</span> taint
+    <span class="yaml-key">severity:</span> ERROR
+    <span class="yaml-key">pattern-sources:</span>
+      - <span class="yaml-key">pattern:</span> request.query_params.get(...)
+    <span class="yaml-key">pattern-sinks:</span>
+      - <span class="yaml-key">pattern:</span> subprocess.run(...)
+    <span class="yaml-key">metadata:</span>
+      <span class="yaml-key">cwe:</span> CWE-78
+      <span class="yaml-key">owasp:</span> A03:2021 - Injection</code></pre>
+        </section>
+        <section class="interfaces panel">
+          <div class="panel-header"><div><span class="panel-label">OPERATOR INTERFACES</span><strong>Human and agent ready</strong></div></div>
+          <div class="interface-list">
+            <article><span>CLI</span><div><b>origintrace_cli.py</b><small>List incidents and trigger correlation scans.</small></div></article>
+            <article><span>MCP</span><div><b>JSON-RPC 2.0 tools</b><small>Query incidents, correlate code, synthesize rules.</small></div></article>
+            <article><span>API</span><div><b>FastAPI receiver</b><small>Accept and normalize Falco webhook telemetry.</small></div></article>
+            <article><span>SIEM</span><div><b>Elastic + Kibana</b><small>Search every verdict, source origin, and command.</small></div></article>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="rule-dialog">
+    <div class="dialog-header">
+      <div><span class="panel-label">GENERATED CONTROL</span><h2>Semgrep taint rule</h2></div>
+      <button id="close-dialog" class="icon-button" type="button" aria-label="Close dialog">×</button>
+    </div>
+    <pre id="dialog-rule"><code></code></pre>
+    <div class="dialog-actions">
+      <span><i></i> Valid YAML · ERROR severity</span>
+      <button class="primary-button copy-rule" type="button">Copy rule</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+  <script src="./app.js"></script>
+</body>
+</html>

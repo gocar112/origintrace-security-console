@@ -1,0 +1,5 @@
+*.tar.gz
+book/qa/
+__pycache__/
+.sites-runtime/
+
