@@ -37,4 +37,3 @@ Then open `http://127.0.0.1:4173/`.
 ## Security boundary
 
 The hosted console visualizes repository-backed evidence and prepares authorized scanner commands. Network tests run from the Python scanner in a trusted environment. Only test systems you own or have explicit permission to assess.
-
